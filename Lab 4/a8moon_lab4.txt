@@ -4,12 +4,12 @@ Do not modify the '=== QUESTION X ===' headers.
 === QUESTION 1 ===
 In the lab manual, it is mentioned that using a queue to store your TCBs is interesting. Explain how round-robin scheduling can work using a queue instead of just an array. Are there any benefits?
 
-[Your Answer Here]
+A queue keeps the threads in a FIFO format. To schedule, the thread is taken at the head and ran. When it yields, it is put back at the tail, and each thread then gets one turn per cycle. This is beneficial in terms of run time as just picking the next thread does not require any additional arithmetic. 
 
 === QUESTION 2 ===
 Explain in your own words how the PendSV_Handler function executes a context switch.
 
-[Your Answer Here]
+When osYield is called, it runs SVC #4. 
 
 === QUESTION 3 ===
 Presume we modify our OS as follows: we add an integer, “priority”, to the TCB, where a higher integer means a higher priority, and we change the scheduler so that it always chooses the task with highest priority. This is a bad idea. Why?
