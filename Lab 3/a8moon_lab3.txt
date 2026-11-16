@@ -1,0 +1,28 @@
+MTE241 LAB 3 SUBMISSION TEMPLATE
+Do not modify the '=== QUESTION X ===' headers.
+
+=== QUESTION 1 ===
+In your own words, explain the process by which multiple *.c files get compiled into a single executable.
+
+Each source file is compiled on its own into an object file, and the assembly files and the startup files are assembled into the object file as well. For C files, the preprocessor first gets the header files for the corresponding C files, then the compiler turns the preprocessed code into assembly, and the assembler turns that assembly into machine code, which it stores in an object file. The compiler only needs a function's declaration and not definition, so the call stays unresolved in the object file. The linker then combines all the object files and libraries, matching each unresolved reference to its one definition. Then using the linker script, code and data is placed into flash and RAM, and fills the final addresses to produce a single executable that can be loaded onto the board.
+
+=== QUESTION 2 ===
+In your own words, explain why you should not use an #include directive to include a *.c file in another file.
+
+#include copies a file's entire content into the files containing the directive, so if you include a *.c file into another *.c file, the file that was copied over would get its own definition of everything in the *.c file it was included into. Since both *.c files are compiled separately, the linker would find two definitions and cause a multiple-definition error. Therefore, the declarations belong in the corresponding header files, which can include many files with definitions staying in the *.c files
+
+=== QUESTION 3 ===
+Write a brief explanation, from the user’s perspective, about how to set up and start a thread. Do not include code, simply explain the process in words.
+
+The user first writes the thread in the main file as a function that takes in a void pointer that returns nothing. In the function, the user initializes the kernel, then calls the create-thread function with a pointer to the thread function, which checks if a stack can be allocated. Lastly, the user calls the kernel start function which begins to run the thread.
+
+=== QUESTION 4 ===
+Explain what the stack pool is for, and how it can be used in a future lab to enable multiple threads to exist in our OS.
+
+The stack pool is a 0x4000 byte region of the RAM which is reserved in the linker script and starting at MSP's initial value, which is divided into individual 0x400 stacks for threads. In a future lab, the single global thread struct can be formed as an array, with each entry storing stack pointer for a different stack from the pool. 
+
+=== QUESTION 5 ===
+Explain the distinction between the “user” and the “kernel” in terms of what goes into which file. Why is this distinction important, from the user’s perspective?
+
+User code goes into the main file, containing main functions and thread functions. Kernel's global variables and functions go in kernel.c, and its struct and definitions as well as declaration of functions go into the header file kernel.h. This distinction matters to the user becasue they only need to write thread functions and call the kernel API in the right order with no need to know how the stacks are allocated or how the thread is starting.
+

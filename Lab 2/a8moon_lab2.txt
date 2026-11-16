@@ -1,0 +1,28 @@
+MTE241 LAB 2 SUBMISSION TEMPLATE
+Do not modify the '=== QUESTION X ===' headers.
+
+=== QUESTION 1 ===
+In your own words, explain what happened in this lab when you changed PC to hold the function pointer to your print continuously function.
+
+The PC register holds the address of the next instruction the CPU will run, so the PC address is where the CPU goes to next. jumpAssembly((void*)print_continuously) puts the function address into R0 as the first argument always goes into R0. Then MOV PC, R0 copies it into the program counter. On the next run to fetch instruction, the CPU will read from the start of print_continuously and start to execute it. Basically, a function call is just loading a new address into PC. Since MOV PC does not save a return address in LR, jumpAssembly never returns as print_continuously loops forever.
+
+=== QUESTION 2 ===
+In your own words, explain what a system call is a defined interface that the code uses to request something from the OS kernel. The code and threads should not directly access hardware of OS data, as it could break the system. Therefore, it asks the kernel to do it through a controlled entry point, and the kernel decides how to handle the code's request. On the Cortex-M4, the system call is made with the SVC instruction. This causes an exception so the CPU saves the register on the stack, switches to handler mode, and jump to the SVC_Handler. The handler reads the number from the instruction and using the switch statement, decides what to run. Then the CPU restores the registers and continues the code from where it left off 
+
+A system call is 
+
+=== QUESTION 3 ===
+Explain in your own words how the thread’s stack was set up. Comment on what it means to “set up a thread’s stack”, and why we need to store register values on the stack.
+
+The thread starts 0x400 bytes below the initial MSP value which was stored at address 0x0. As a stack grows down, stackptr moves down one slot for the new stack before each write. xPSR (1 << 24) was pushed, then PC as the address of print_continuously, then 14 fillers of 0xA for other registers. The order matters. When the exception returns, the hardware pops xPSR, PC, LR, R12, and R3-R0 in order, then runsFirstThread to pop R4-R11. If the values were pushed in a different order, the wrong values end up in wrong registers, and the PC would never receive the correct function address. Setting up a stack means that the stack is getting filled with fake register values so that it looks like the thread was already running. Register values are stored on a stack because the registers are a thread's entire state. Saving them lets a thread be paused and later loaded back with everything in order to continue. 
+
+=== QUESTION 4 ===
+In the switch/case in SVC_Handler_Main, we set PSP using the __set_PSP function before we could run the thread. If we didn’t do this, the code would crash in a hard fault. Explain why
+
+Each thread has its own stack, separate from the main stack where the MSP points to. On the Cortex-M4, PSP is the stack pointer for the threads, while the MSP is used by main. The thread's context was written by the stackptr, not to the MSP stack. runFirstThread reads PSP to pop R4-R11, then returns with LR = 0xFFFFFFFD which tells the CPU to return a thread mode and pop all other registers from PSP. IF __set_PSP was never used, the PSP would hold its default value of 0, instead of pointing to the thread's stack which would make the PC hold meaningless address, causing a Hardfault
+
+=== QUESTION 5 ===
+Our thread function looped continuously. Assume that it didn’t, and instead it simply printed something once and returned. What would happen?
+
+When a function returns, it jumps to the address in LR. LR holds address of whoever called the function, but the thread was never called by anything. The thread was started by popping a fake value off the stack, so the LR holds a fake value of 0xA that was assigned during the stack's setup. The CPU will try to execute the code at address 0xA, which is not a valid code location, as it is inside a vector table, holding addresses not instructions. Also, bit 0 is 0 and this is not a valid state in Cortex-M4, causing a HardFault
+
