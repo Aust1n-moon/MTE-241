@@ -1,0 +1,4 @@
+*.txt
+*.docx
+!CMakeLists.txt
+!LICENSE.txt
