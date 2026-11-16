@@ -1,0 +1,13 @@
+[1mdiff --git a/Lab 4/ece350_start/Core/Src/main.c b/Lab 4/ece350_start/Core/Src/main.c[m
+[1mindex d0fb3cf..f31d771 100644[m
+[1m--- a/Lab 4/ece350_start/Core/Src/main.c[m	
+[1m+++ b/Lab 4/ece350_start/Core/Src/main.c[m	
+[36m@@ -7,7 +7,7 @@[m
+   * @attention[m
+   *[m
+   * Copyright (c) 2023 STMicroelectronics.[m
+[31m-  * All rights reserved.[m
+[32m+[m[32m  * All rights res@category:debuggers stlinkgdbtargeterved.[m
+   *[m
+   * This software is licensed under terms that can be found in the LICENSE file[m
+   * in the root directory of this software component.[m

@@ -35,8 +35,18 @@ void print_continuously(void* args)
 {
 	while (1)
 	{
-		printf("Hello, PC!\r\n");
+		printf("Thread 1\r\n");
+    osYield();
 	}
+}
+
+void print_again(void* args)
+{
+  while(1)
+  {
+    printf("Thread 2\r\n");
+    osYield();
+  }
 }
 
 void print_success(void)
@@ -89,6 +99,7 @@ int main(void)
 
   osKernelInitialize();
   osCreateThread(print_continuously);
+  osCreateThread(print_again);
   osKernelStart();
   
 

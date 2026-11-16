@@ -3,9 +3,17 @@
 #include <stdint.h>
 #include <stdio.h>
 
-thread Thread_;
+thread threadArray[MAX_THREADS];
+int numThreadsRunning = 0;   
+int currentThread = 0;
 
-void osSched(){return;}
+void osSched(void)
+{
+	// PendSV pushed R4-R11 below PSP through R0 but didn't update PSP, so the frame starts 8 words lower
+	threadArray[currentThread].sp = (uint32_t*)(__get_PSP() - 8*4);
+	currentThread = (currentThread+1)%numThreadsRunning;
+	__set_PSP((uint32_t)threadArray[currentThread].sp);
+}
 
 void SVC_Handler_Main( unsigned int *svc_args)
 {
@@ -24,11 +32,16 @@ void SVC_Handler_Main( unsigned int *svc_args)
 		printf("Success!\r\n");
 		break;
 	case 3:
-				__set_PSP((uint32_t)Thread_.sp);
-				runFirstThread();
-				break;
+        __set_PSP((uint32_t)threadArray[currentThread].sp);
+        runFirstThread();
+		break;
+	case YIELD:
+		//Pend an interrupt to do the context switch
+		SCB->ICSR |=1<<28;
+		__asm("isb");
+		break;
 	default:
-			break;
+		break;
 	}
 }
 
@@ -65,8 +78,9 @@ int osCreateThread(void (*thread_fp)(void*))
     	*(--newstack) = 0xA;
 	}
 
-	Thread_.sp = newstack;
-	Thread_.thread_function = thread_fp;
+	threadArray[numThreadsRunning].sp = newstack;
+	threadArray[numThreadsRunning].thread_function = thread_fp;
+	numThreadsRunning++;
 	return 1;
 }
 
@@ -79,4 +93,9 @@ void osKernelInitialize(void)
 void osKernelStart(void)
 {
 	__asm("SVC #3");
+}
+
+void osYield(void)
+{
+	__asm("SVC #4");   
 }
